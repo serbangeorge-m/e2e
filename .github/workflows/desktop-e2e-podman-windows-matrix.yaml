@@ -75,32 +75,20 @@ jobs:
 
     steps:
     - name: Set the default env. variables
-      env:
-        DEFAULT_REPO_BRANCH: 'FORK=podman-desktop,BRANCH=main'
-        DEFAULT_NPM_TARGET: 'test:e2e'
-        DEFAULT_PODMAN_REMOTE_URL: 'https://github.com/containers/podman/releases/download/v5.2.5/podman-5.2.5-setup.exe'
-        DEFAULT_PODMAN_MACHINE_OPTIONS: 'INIT=1,START=1'
-        DEFAULT_PODMAN_PROVIDER: 'wsl'
-        DEFAULT_IMAGES_VERSIONS: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.0.3"'
-      run: |
-        echo "${{ github.event.inputs.repo_branch || env.DEFAULT_REPO_BRANCH }}" | awk -F ',' \
-         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        # Set podman configuration variables directly from separate inputs
-        echo "PODMAN_REMOTE_URL=${{ github.event.inputs.podman_remote_url || env.DEFAULT_PODMAN_REMOTE_URL }}" >> $GITHUB_ENV
-        echo "${{ github.event.inputs.podman_machine_options || env.DEFAULT_PODMAN_MACHINE_OPTIONS }}" | awk -F ',' \
-         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        echo "PODMAN_PROVIDER=${{ github.event.inputs.podman_provider || env.DEFAULT_PODMAN_PROVIDER }}" >> $GITHUB_ENV
-        echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
-        echo "${{ github.event.inputs.images_version || env.DEFAULT_IMAGES_VERSIONS }}" | awk -F ',' \
-         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PDE2E_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
-        
-        # For mapt_params, use repo variables directly if input is empty
-        if [ -n "${{ github.event.inputs.mapt_params }}" ]; then
-          mapt_params="${{ github.event.inputs.mapt_params }}"
-        else
-          mapt_params="IMAGE=${{ vars.MAPT_IMAGE }};VERSION_TAG=${{ vars.MAPT_VERSION_TAG }};CPUS=${{ vars.MAPT_CPUS }};MEMORY=${{ vars.MAPT_MEMORY }};EXCLUDED_REGIONS=\"${{ vars.MAPT_EXCLUDED_REGIONS }}\""
-        fi
-        echo "$mapt_params" | awk -F ';' '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "MAPT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
+      uses: ./.github/actions/set-env-variables
+      with:
+        repo-branch: ${{ github.event.inputs.repo_branch || 'FORK=podman-desktop,BRANCH=main' }}
+        podman-remote-url: ${{ github.event.inputs.podman_remote_url || 'https://github.com/containers/podman/releases/download/v5.2.5/podman-5.2.5-setup.exe' }}
+        podman-machine-options: ${{ github.event.inputs.podman_machine_options || 'INIT=1,START=1' }}
+        podman-provider: ${{ github.event.inputs.podman_provider || 'wsl' }}
+        npm-target: ${{ github.event.inputs.npm_target || 'test:e2e' }}
+        images-version: ${{ github.event.inputs.images_version || 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.0.3"' }}
+        mapt-params: ${{ github.event.inputs.mapt_params }}
+        mapt-image: ${{ vars.MAPT_IMAGE }}
+        mapt-version-tag: ${{ vars.MAPT_VERSION_TAG }}
+        mapt-cpus: ${{ vars.MAPT_CPUS }}
+        mapt-memory: ${{ vars.MAPT_MEMORY }}
+        mapt-excluded-regions: ${{ vars.MAPT_EXCLUDED_REGIONS }}
         
 
     - name: Create instance

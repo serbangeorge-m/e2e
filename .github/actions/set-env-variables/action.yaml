@@ -1,0 +1,159 @@
+name: 'Set Environment Variables'
+description: 'Parse and set environment variables for Podman Desktop E2E tests'
+
+inputs:
+  repo-branch:
+    description: 'Podman Desktop repo fork and branch (comma-separated: FORK=...,BRANCH=...)'
+    required: false
+    default: ''
+  
+  podman-remote-url:
+    description: 'Podman remote download URL'
+    required: false
+    default: ''
+  
+  podman-machine-options:
+    description: 'Podman machine options (comma-separated: INIT=...,START=...)'
+    required: false
+    default: ''
+  
+  podman-provider:
+    description: 'Podman provider (wsl or hyperv)'
+    required: false
+    default: 'wsl'
+  
+  npm-target:
+    description: 'NPM test target to run'
+    required: false
+    default: ''
+  
+  images-version:
+    description: 'Testing images versions (comma-separated: BUILDER=...,PODMAN=...)'
+    required: false
+    default: ''
+  
+  env-vars:
+    description: 'Additional environment variables'
+    required: false
+    default: ''
+  
+  mapt-params:
+    description: 'MAPT parameters (semicolon-separated: IMAGE=...;VERSION_TAG=...)'
+    required: false
+    default: ''
+  
+  mapt-image:
+    description: 'MAPT image fallback'
+    required: false
+    default: ''
+  
+  mapt-version-tag:
+    description: 'MAPT version tag fallback'
+    required: false
+    default: ''
+  
+  mapt-cpus:
+    description: 'MAPT CPUS fallback'
+    required: false
+    default: ''
+  
+  mapt-memory:
+    description: 'MAPT memory fallback'
+    required: false
+    default: ''
+  
+  mapt-excluded-regions:
+    description: 'MAPT excluded regions fallback'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Parse and export environment variables
+      shell: bash
+      env:
+        REPO_BRANCH: ${{ inputs.repo-branch }}
+        PODMAN_REMOTE_URL: ${{ inputs.podman-remote-url }}
+        PODMAN_MACHINE_OPTIONS: ${{ inputs.podman-machine-options }}
+        PODMAN_PROVIDER: ${{ inputs.podman-provider }}
+        NPM_TARGET: ${{ inputs.npm-target }}
+        IMAGES_VERSION: ${{ inputs.images-version }}
+        ENV_VARS: ${{ inputs.env-vars }}
+        MAPT_PARAMS: ${{ inputs.mapt-params }}
+        MAPT_IMAGE: ${{ inputs.mapt-image }}
+        MAPT_VERSION_TAG: ${{ inputs.mapt-version-tag }}
+        MAPT_CPUS: ${{ inputs.mapt-cpus }}
+        MAPT_MEMORY: ${{ inputs.mapt-memory }}
+        MAPT_EXCLUDED_REGIONS: ${{ inputs.mapt-excluded-regions }}
+      run: |
+        # Parse comma-separated key=value pairs
+        parse_comma_separated() {
+          local input="$1"
+          local prefix="${2:-}"
+          
+          # Strip leading/trailing whitespace and return if empty
+          input=$(echo "$input" | xargs)
+          if [ -z "$input" ]; then
+            return 0
+          fi
+          
+          echo "$input" | awk -F "," -v prefix="$prefix" \
+            '{for (i=1; i<=NF; i++) {split($i, kv, "="); if (kv[1] != "") {
+              gsub(/^[ \t]+|[ \t]+$/, "", kv[1]); gsub(/^[ \t]+|[ \t]+$/, "", kv[2]);
+              print prefix kv[1]"="kv[2]
+            }}}' >> $GITHUB_ENV
+        }
+        
+        # Parse semicolon-separated key=value pairs
+        parse_semicolon_separated() {
+          local input="$1"
+          local prefix="${2:-}"
+          
+          # Strip leading/trailing whitespace and return if empty
+          input=$(echo "$input" | xargs)
+          if [ -z "$input" ]; then
+            return 0
+          fi
+          
+          echo "$input" | awk -F ";" -v prefix="$prefix" \
+            '{for (i=1; i<=NF; i++) {split($i, kv, "="); if (kv[1] != "") {
+              gsub(/^[ \t]+|[ \t]+$/, "", kv[1]); gsub(/^[ \t]+|[ \t]+$/, "", kv[2]);
+              print prefix kv[1]"="kv[2]
+            }}}' >> $GITHUB_ENV
+        }
+        
+        # Parse repo branch (FORK=...,BRANCH=...)
+        if [ -n "$REPO_BRANCH" ]; then
+          parse_comma_separated "$REPO_BRANCH" "PD_"
+        fi
+        
+        # Parse podman machine options (INIT=...,START=...,ROOTFUL=...,NETWORKING=...)
+        if [ -n "$PODMAN_MACHINE_OPTIONS" ]; then
+          parse_comma_separated "$PODMAN_MACHINE_OPTIONS" "PODMAN_"
+        fi
+        
+        # Parse images version (BUILDER=...,PODMAN=...,RUNNER=...)
+        if [ -n "$IMAGES_VERSION" ]; then
+          parse_comma_separated "$IMAGES_VERSION" "PDE2E_"
+        fi
+        
+        # Export direct variables
+        [ -n "$PODMAN_REMOTE_URL" ] && echo "PODMAN_URL=$PODMAN_REMOTE_URL" >> $GITHUB_ENV
+        [ -n "$PODMAN_PROVIDER" ] && echo "PODMAN_PROVIDER=$PODMAN_PROVIDER" >> $GITHUB_ENV
+        [ -n "$NPM_TARGET" ] && echo "NPM_TARGET=$NPM_TARGET" >> $GITHUB_ENV
+        [ -n "$ENV_VARS" ] && echo "ENV_VARS=$ENV_VARS" >> $GITHUB_ENV
+        
+        # Parse MAPT parameters with fallback
+        if [ -n "$MAPT_PARAMS" ]; then
+          parse_semicolon_separated "$MAPT_PARAMS" "MAPT_"
+        else
+          # Use fallback variables
+          [ -n "$MAPT_IMAGE" ] && echo "MAPT_IMAGE=$MAPT_IMAGE" >> $GITHUB_ENV
+          [ -n "$MAPT_VERSION_TAG" ] && echo "MAPT_VERSION_TAG=$MAPT_VERSION_TAG" >> $GITHUB_ENV
+          [ -n "$MAPT_CPUS" ] && echo "MAPT_CPUS=$MAPT_CPUS" >> $GITHUB_ENV
+          [ -n "$MAPT_MEMORY" ] && echo "MAPT_MEMORY=$MAPT_MEMORY" >> $GITHUB_ENV
+          [ -n "$MAPT_EXCLUDED_REGIONS" ] && echo "MAPT_EXCLUDED_REGIONS=$MAPT_EXCLUDED_REGIONS" >> $GITHUB_ENV
+        fi
+        
+        echo "✓ Environment variables exported to GITHUB_ENV"
