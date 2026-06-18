@@ -64,11 +64,13 @@ function Load-Variables() {
     $global:scriptEnvVars += "ROOTFUL_MODE"
     $global:envVarDefs += "ROOTFUL_MODE=$rootfulMode"
 
-    # Set PODMAN_DESKTOP_BINARY if exists
+    # Set application binary env var based on appNameSlug
+    # e.g. "kaiden" -> KAIDEN_BINARY, "podman-desktop" -> PODMAN_DESKTOP_BINARY
+    $binaryEnvVar = ($appNameSlug.ToUpper().Replace('-', '_')) + "_BINARY"
     if($podmanDesktopBinary) {
-        Set-Item -Path "env:PODMAN_DESKTOP_BINARY" -Value "$podmanDesktopBinary"
-        $global:scriptEnvVars += "PODMAN_DESKTOP_BINARY"
-        $global:envVarDefs += "PODMAN_DESKTOP_BINARY=$podmanDesktopBinary"
+        Set-Item -Path "env:$binaryEnvVar" -Value "$podmanDesktopBinary"
+        $global:scriptEnvVars += $binaryEnvVar
+        $global:envVarDefs += "$binaryEnvVar=$podmanDesktopBinary"
     } elseif ($extTests -eq "1") {
         Set-Item -Path "env:PODMAN_DESKTOP_ARGS" -Value "$workingDir\$repo"
         $global:scriptEnvVars += "PODMAN_DESKTOP_ARGS"

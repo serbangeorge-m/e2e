@@ -359,9 +359,10 @@ else
     podmanDesktopBinary="$pdPath"
 fi
 
+binaryEnvVar=$(echo "${appName}" | tr '[:lower:] -' '[:upper:]__')"_BINARY"
 if [ -n "$podmanDesktopBinary" ]; then
-    echo "Setting PODMAN_DESKTOP_BINARY to: $podmanDesktopBinary"
-    export PODMAN_DESKTOP_BINARY="$podmanDesktopBinary"
+    echo "Setting $binaryEnvVar to: $podmanDesktopBinary"
+    export "$binaryEnvVar=$podmanDesktopBinary"
 elif (( extTests == 1 )); then
     echo "Setting PODMAN_DESKTOP_ARGS to: $workingDir/podman-desktop"
     export PODMAN_DESKTOP_ARGS="$workingDir/podman-desktop"

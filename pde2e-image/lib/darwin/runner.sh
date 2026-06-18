@@ -401,9 +401,10 @@ else
     # check that app does not have quarantine attribute - which is the case after manual install from dmg
 fi
 
+binaryEnvVar=$(echo "${appName}" | tr '[:lower:] -' '[:upper:]__')"_BINARY"
 if [ -n "$podmanDesktopBinary" ]; then
-    echo "Setting PODMAN_DESKTOP_BINARY to: $podmanDesktopBinary"
-    export PODMAN_DESKTOP_BINARY="$podmanDesktopBinary"
+    echo "Setting $binaryEnvVar to: $podmanDesktopBinary"
+    export "$binaryEnvVar=$podmanDesktopBinary"
 elif (( extTests == 1 )); then
     echo "Setting PODMAN_DESKTOP_ARGS to: $workingDir/$repo"
     export PODMAN_DESKTOP_ARGS="$workingDir/$repo"
