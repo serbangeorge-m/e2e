@@ -137,8 +137,7 @@ jobs:
         podman-download-url: ${{ env.PODMAN_URL }}
 
     - name: Run Podman Desktop Playwright E2E tests
-      # TEMP (#599 test): pin this branch; revert to @main when merging
-      uses: podman-desktop/e2e/.github/actions/run-playwright-test@issue-599
+      uses: podman-desktop/e2e/.github/actions/run-playwright-test@main
       with:
         e2e-runner-tag: ${{ env.PDE2E_RUNNER }}
         fork-repo: ${{ env.FORK }}
