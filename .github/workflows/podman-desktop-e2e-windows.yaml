@@ -127,7 +127,7 @@ jobs:
         
     - name: Install Podman via Podman Desktop using GOAX
       run: |
-        cat results/pde2e-binary-path.log | awk '{print $1}'
+        cat results/pd-binary-path.log | awk '{print $1}'
         # Run e2e tests
         podman run --rm -d --name pd-e2e-windows \
           -e TARGET_HOST=$(cat host) \
@@ -144,7 +144,7 @@ jobs:
                   -targetFolder pd-e2e \
                   -wslInstallFix 'true' \
                   -junitResultsFilename pd-e2e-results.xml \
-                  -pdPath "$(cat results/pde2e-binary-path.log | tr '\n' " ")" \
+                  -pdPath "$(cat results/pd-binary-path.log | tr '\n' " ")" \
                   -resultsFolder pd-e2e-results
         # Check logs 
         podman logs -f pd-e2e-windows

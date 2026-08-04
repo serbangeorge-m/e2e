@@ -390,7 +390,7 @@ The unified Tekton task combines all parameters from both original tasks:
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  name: pde2e-test-with-podman-setup
+  name: e2e-test-with-podman-setup
 spec:
   taskRef:
     name: e2e-runner

@@ -122,7 +122,7 @@ userProfile="$HOME"
 toolsInstallDir="$userProfile/tools"
 
 # Output file for built podman desktop binary
-outputFile="pde2e-binary-path.log"
+outputFile="pd-binary-path.log"
 
 # Determine the system's arch
 architecture=$(uname -m)
