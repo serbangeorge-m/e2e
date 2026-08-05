@@ -198,21 +198,9 @@ jobs:
 
     - name: Notify Slack
       if: always()
-      env:
-        WORKFLOW_NAME: ${{ github.workflow }} (Windows ${{ matrix.windows-version }} ${{ matrix.windows-featurepack }})
-        REPO_NAME: ${{ github.repository }}
-        BRANCH_NAME: ${{ env.BRANCH }}
-        JOB_STATUS: ${{ job.status }}
-        ACTOR_NAME: ${{ github.actor }}
-        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      run: |
-        payload=$(jq -n \
-          --arg workflow_name "$WORKFLOW_NAME" \
-          --arg repo "$REPO_NAME" \
-          --arg branch "$BRANCH_NAME" \
-          --arg status "$JOB_STATUS" \
-          --arg actor "$ACTOR_NAME" \
-          --arg run_url "$RUN_URL" \
-          '{workflow_name:$workflow_name, repo:$repo, branch:$branch, status:$status, actor:$actor, run_url:$run_url}')
-        curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+      uses: podman-desktop/e2e/.github/actions/notify-slack@main
+      with:
+        webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        status: ${{ job.status }}
+        workflow-name: "${{ github.workflow }} (Windows ${{ matrix.windows-version }} ${{ matrix.windows-featurepack }})"
+        branch: ${{ env.BRANCH }}
