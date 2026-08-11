@@ -54,7 +54,9 @@ param(
     [Parameter(HelpMessage = 'Install WSL on Windows, default is 0/false')]
     $installWSL = '0',
     [Parameter(HelpMessage = 'Print all script parameters, default is 0/false')]
-    $debugScript = '0'
+    $debugScript = '0',
+    [Parameter(HelpMessage = 'Stop after installing/initializing Podman, skipping application checkout and test execution. Default is 0/false')]
+    $installOnly = '0'
 )
 
 # Map display name to installation slug
@@ -112,6 +114,7 @@ if ($debugScript -eq "1") {
     Write-Host "podmanDownloadUrl=$podmanDownloadUrl"
     Write-Host "installWSL=$installWSL"
     Write-Host "debugScript=$debugScript"
+    Write-Host "installOnly=$installOnly"
 }
 
 # Execution beginning
@@ -455,10 +458,14 @@ if ($initialize -eq "1") {
     # the tests expect podman machine to be up
     if ($smokeTests -eq "1") {
         $testsLogFile = "$workingDir\$resultsFolder\podman-machine-tests.log"
-        # TODO: include basic tests for podman machine verification 
+        # TODO: include basic tests for podman machine verification
     }
 }
 
+if ($installOnly -eq "1") {
+    write-host "installOnly is set, skipping application checkout and test execution. Script finished..."
+    exit 0
+}
 
 # checkout repository
 Clone-Checkout $repo $fork $branch $gitProviderUrl

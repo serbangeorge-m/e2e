@@ -381,6 +381,7 @@ Parameters are similar to macOS with PowerShell syntax (`-parameter` instead of 
 
 Additional Windows-specific parameter:
 - `-installWSL`: Install WSL2 (default: `0`)
+- `-installOnly`: Stop right after Podman is installed and the Podman machine is initialized/started, skipping application checkout, dependency installation and test execution (default: `0`). Use this to install Podman as a separate, independently-debuggable step (see the `install-podman-machine` GitHub Action) before calling `run-playwright-test` without a `podman-download-url` (Podman is already on the remote host's `PATH`).
 
 ## Tekton Task Usage
 

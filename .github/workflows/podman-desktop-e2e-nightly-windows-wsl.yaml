@@ -119,8 +119,15 @@ jobs:
     - name: Check instance system info
       uses: podman-desktop/e2e/.github/actions/instance-system-info@main
 
-    - name: Emulate X session 
+    - name: Emulate X session
       uses: podman-desktop/e2e/.github/actions/emulate-x-session@main
+
+    - name: Install Podman machine
+      uses: serbangeorge-m/e2e/.github/actions/install-podman-machine@install-podman-machine-action
+      with:
+        e2e-runner-tag: ${{ env.E2E_RUNNER_VERSION }}
+        podman-download-url: ${{ env.PODMAN_URL }}
+        podman-provider: ${{ env.PODMAN_PROVIDER }}
 
     - name: Setup dependencies and build Podman Desktop locally
       uses: podman-desktop/e2e/.github/actions/build-podman-desktop@main
@@ -132,13 +139,14 @@ jobs:
       uses: podman-desktop/e2e/.github/actions/run-playwright-test@main
       with:
         e2e-runner-tag: ${{ env.E2E_RUNNER_VERSION }}
-        podman-download-url: ${{ env.PODMAN_URL }}
         fork-repo: ${{ env.FORK }}
         branch-name: ${{ env.BRANCH }}
         npm-target: ${{ env.NPM_TARGET }}
         podman-provider: ${{ env.PODMAN_PROVIDER }}
         env-vars: ${{ env.ENV_VARS }}
         ci-bot-token: ${{ secrets.PODMANDESKTOP_CI_BOT_TOKEN }}
+        podman-init: '0'
+        podman-start: '0'
     
     - name: Create json file with workflow run attributes
       if: always()
